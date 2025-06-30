@@ -3,97 +3,97 @@ class_name DrawTerrainMesh extends CompositorEffect
 
 
 ## Regenerate mesh data and recompile shaders TODO: Separate mesh generation and shader recompilation
-@export var regenerate : bool = true
+@export var regenerate: bool = true
 
 @export_group("Mesh Settings")
 ## Number of vertices in the plane mesh, quad count per row is thus  [code]side_length - 1[/code]
-@export_range(2, 1000, 1, "or_greater") var side_length : int = 200
+@export_range(2, 1000, 1, "or_greater") var side_length: int = 200
 
 ## Distance between vertices
-@export_range(0.01, 1.0, 0.01, "or_greater") var mesh_scale : float = 1.0
+@export_range(0.01, 1.0, 0.01, "or_greater") var mesh_scale: float = 1.0
 
 ## Render mesh wireframe
-@export var wireframe : bool = false
+@export var wireframe: bool = false
 
 @export_group("Noise Settings")
 
 ## Seed for the noise, change for instant gratification
-@export var noise_seed : int = 0
+@export var noise_seed: int = 0
 
 ## Horizontal scale of the noise
-@export_range(0.1, 400, 0.1, "or_greater") var zoom : float = 100.0
+@export_range(0.1, 400, 0.1, "or_greater") var zoom: float = 100.0
 
 ## Horizontal scroll through the noise,  [code]y[/code] component adjusts height of plane
-@export var offset : Vector3 = Vector3.ZERO
+@export var offset: Vector3 = Vector3.ZERO
 
 ## Rotates the gradient vectors used to calculate perlin noise
-@export_range(-180.0, 180.0) var gradient_rotation : float = 0.0
+@export_range(-180.0, 180.0) var gradient_rotation: float = 0.0
 
 ## How many layers of noise to sum. More octaves give more detail with diminishing returns.
-@export_range(1, 32) var octave_count : int = 10
+@export_range(1, 32) var octave_count: int = 10
 
 @export_subgroup("Octave Settings")
 ## Amount of rotation (in degrees) to apply each octave iteration
-@export_range(-180.0, 180.0) var rotation : float = 30.0
+@export_range(-180.0, 180.0) var rotation: float = 30.0
 
 ## Random adjustment to rotation per octave, adjustment is generated between this range
-@export var angular_variance : Vector2 = Vector2.ZERO
+@export var angular_variance: Vector2 = Vector2.ZERO
 
 ## Amplitude of the first noise octave
-@export_range(0.01, 2.0) var initial_amplitude : float = 0.5
+@export_range(0.01, 2.0) var initial_amplitude: float = 0.5
 
 ## Value to multiply with amplitude each octave iteration, lower values will reduce the impact of each subsequent octave.
-@export_range(0.01, 1.0) var amplitude_decay : float = 0.45
+@export_range(0.01, 1.0) var amplitude_decay: float = 0.45
 
 ## Self similarity of each octave
-@export_range(0.01, 3.0) var lacunarity : float = 2.0
+@export_range(0.01, 3.0) var lacunarity: float = 2.0
 
 ## Random adjustment to frequency per octave, adjustment is generated between this range
-@export var frequency_variance : Vector2 = Vector2.ZERO
+@export var frequency_variance: Vector2 = Vector2.ZERO
 
 ## Multiplies with final noise result to adjust terrain height
-@export_range(0.0, 300.0, 0.1, "or_greater") var height_scale : float = 50.0
+@export_range(0.0, 300.0, 0.1, "or_greater") var height_scale: float = 50.0
 
 @export_group("Material Settings")
 
 ## Scales the slope to make slope blending easier
-@export var slope_damping : float = 0.2
+@export var slope_damping: float = 0.2
 
 ## If the slope is less than the low threshold, outputs  [code]low_slope_color[/code]. If the slope is greater than the upper threshold, outputs  [code]high_slope_color[/code]. If inbetween, blend between the colors.
-@export var slope_threshold : Vector2 = Vector2(0.9, 0.98)
+@export var slope_threshold: Vector2 = Vector2(0.9, 0.98)
 
 ## Color of flatter areas of terrain
-@export var low_slope_color : Color = Color(0.83, 0.88, 0.94)
+@export var low_slope_color: Color = Color(0.83, 0.88, 0.94)
 
 ## Color of steeper areas of terrain
-@export var high_slope_color : Color = Color(0.16, 0.1, 0.1)
+@export var high_slope_color: Color = Color(0.16, 0.1, 0.1)
 
 
 @export_group("Light Settings")
 
 ## Additive light adjustment
-@export var ambient_light : Color = Color.DIM_GRAY
+@export var ambient_light: Color = Color.DIM_GRAY
 
 
-var transform : Transform3D
-var light : DirectionalLight3D
+var transform: Transform3D
+var light: DirectionalLight3D
 
-var rd : RenderingDevice
-var p_framebuffer : RID
-var cached_framebuffer_format : int
+var rd: RenderingDevice
+var p_framebuffer: RID
+var cached_framebuffer_format: int
 
-var p_render_pipeline : RID
-var p_render_pipeline_uniform_set : RID
-var p_wire_render_pipeline : RID
-var p_vertex_buffer : RID
-var vertex_format : int
-var p_vertex_array : RID
-var p_index_buffer : RID
-var p_index_array : RID
-var p_wire_index_buffer : RID
-var p_wire_index_array : RID
-var p_shader : RID
-var p_wire_shader : RID
+var p_render_pipeline: RID
+var p_render_pipeline_uniform_set: RID
+var p_wire_render_pipeline: RID
+var p_vertex_buffer: RID
+var vertex_format: int
+var p_vertex_array: RID
+var p_index_buffer: RID
+var p_index_array: RID
+var p_wire_index_buffer: RID
+var p_wire_index_array: RID
+var p_shader: RID
+var p_wire_shader: RID
 var clear_colors := PackedColorArray([Color.DARK_BLUE])
 
 func _init():
@@ -103,27 +103,27 @@ func _init():
 
 	# Gets whatever light source is in the scene, compositor effects are resources not nodes and so we need to do some jank stuff to get access to the node scene tree
 	var tree := Engine.get_main_loop() as SceneTree
-	var root : Node = tree.edited_scene_root if Engine.is_editor_hint() else tree.current_scene
+	var root: Node = tree.edited_scene_root if Engine.is_editor_hint() else tree.current_scene
 	if root: light = root.get_node_or_null('DirectionalLight3D')
 
 # Compiles... the shader...?
-func compile_shader(vertex_shader : String, fragment_shader : String) -> RID:
+func compile_shader(vertex_shader: String, fragment_shader: String) -> RID:
 	var src := RDShaderSource.new()
 	src.source_vertex = vertex_shader
 	src.source_fragment = fragment_shader
 	
-	var shader_spirv : RDShaderSPIRV = rd.shader_compile_spirv_from_source(src)
+	var shader_spirv: RDShaderSPIRV = rd.shader_compile_spirv_from_source(src)
 	
 	var err = shader_spirv.get_stage_compile_error(RenderingDevice.SHADER_STAGE_VERTEX)
 	if err: push_error(err)
 	err = shader_spirv.get_stage_compile_error(RenderingDevice.SHADER_STAGE_FRAGMENT)
 	if err: push_error(err)
 	
-	var shader : RID = rd.shader_create_from_spirv(shader_spirv)
+	var shader: RID = rd.shader_create_from_spirv(shader_spirv)
 	
 	return shader
 
-func initialize_render(framebuffer_format : int):
+func initialize_render(framebuffer_format: int):
 	p_shader = compile_shader(source_vertex, source_fragment)
 	p_wire_shader = compile_shader(source_vertex, source_wire_fragment)
 
@@ -133,12 +133,12 @@ func initialize_render(framebuffer_format : int):
 	# Generate plane vertices on the xz plane
 	for x in side_length:
 		for z in side_length:
-			var xz : Vector2 = Vector2(x - half_length, z - half_length) * mesh_scale
+			var xz: Vector2 = Vector2(x - half_length, z - half_length) * mesh_scale
 
-			var pos : Vector3 = Vector3(xz.x, 0, xz.y)
+			var pos: Vector3 = Vector3(xz.x, 0, xz.y)
 
 			# Vertex color is not used but left as a demonstration for adding more vertex attributes
-			var color : Vector4 = Vector4(randf(), randf(), randf(), 1)
+			var color: Vector4 = Vector4(randf(), randf(), randf(), 1)
 
 			# For some reason godot doesn't make it easy to append vectors to arrays
 			for i in 3: vertex_buffer.push_back(pos[i])
@@ -169,7 +169,6 @@ func initialize_render(framebuffer_format : int):
 	#     print("Color: " + str(color))
 
 
-
 	var index_buffer := PackedInt32Array([])
 	var wire_index_buffer := PackedInt32Array([])
 
@@ -189,7 +188,7 @@ func initialize_render(framebuffer_format : int):
 	print("Triangle Count: " + str(index_buffer.size() / 3))
 
 	
-	var vertex_buffer_bytes : PackedByteArray = vertex_buffer.to_byte_array()
+	var vertex_buffer_bytes: PackedByteArray = vertex_buffer.to_byte_array()
 	p_vertex_buffer = rd.vertex_buffer_create(vertex_buffer_bytes.size(), vertex_buffer_bytes)
 	
 	var vertex_buffers := [p_vertex_buffer, p_vertex_buffer]
@@ -214,10 +213,10 @@ func initialize_render(framebuffer_format : int):
 
 	p_vertex_array = rd.vertex_array_create(vertex_buffer.size() / stride, vertex_format, vertex_buffers)
 
-	var index_buffer_bytes : PackedByteArray = index_buffer.to_byte_array()
+	var index_buffer_bytes: PackedByteArray = index_buffer.to_byte_array()
 	p_index_buffer = rd.index_buffer_create(index_buffer.size(), rd.INDEX_BUFFER_FORMAT_UINT32, index_buffer_bytes)
 	
-	var wire_index_buffer_bytes : PackedByteArray = wire_index_buffer.to_byte_array()
+	var wire_index_buffer_bytes: PackedByteArray = wire_index_buffer.to_byte_array()
 	p_wire_index_buffer = rd.index_buffer_create(wire_index_buffer.size(), rd.INDEX_BUFFER_FORMAT_UINT32, wire_index_buffer_bytes)
 
 	p_index_array = rd.index_array_create(p_index_buffer, 0, index_buffer.size())
@@ -229,7 +228,7 @@ func initialize_render(framebuffer_format : int):
 # Initialization of the render pipeline objects is separated from the above code so that we don't have to regenerate everything when the framebuffer format changes
 # otherwise the game would freeze to regenerate the entire terrain every time the window size changes by 1 pixel
 # ideally shader recompilation is separated from the above function too, and generation of the vertex and index buffers also should be separated since that is what causes the stall
-func initialize_render_pipelines(framebuffer_format : int) -> void:
+func initialize_render_pipelines(framebuffer_format: int) -> void:
 	# The rest of this is setting up the render pipeline object, you can read the godot docs to see different settings here but they are largely irrelevant to this project
 	var raster_state = RDPipelineRasterizationState.new()
 	
@@ -249,13 +248,12 @@ func initialize_render_pipelines(framebuffer_format : int) -> void:
 	p_wire_render_pipeline = rd.render_pipeline_create(p_wire_shader, framebuffer_format, vertex_format, rd.RENDER_PRIMITIVE_LINES, raster_state, RDPipelineMultisampleState.new(), depth_state, blend)
 
 
-
-func _render_callback(_effect_callback_type : int, render_data : RenderData):
+func _render_callback(_effect_callback_type: int, render_data: RenderData):
 	if not enabled: return
 	if _effect_callback_type != effect_callback_type: return
 	
-	var render_scene_buffers : RenderSceneBuffersRD = render_data.get_render_scene_buffers()
-	var render_scene_data : RenderSceneData = render_data.get_render_scene_data()
+	var render_scene_buffers: RenderSceneBuffersRD = render_data.get_render_scene_buffers()
+	var render_scene_data: RenderSceneData = render_data.get_render_scene_data()
 	
 	if not render_scene_buffers: return
 
@@ -283,7 +281,7 @@ func _render_callback(_effect_callback_type : int, render_data : RenderData):
 	var MVP = projection * model_view;
 	
 	# Store MVP matrix in gpu data buffer
-	for i in range(0,16):
+	for i in range(0, 16):
 		buffer.push_back(MVP[i / 4][i % 4])
 
 	# Default light direction if no light source is found
@@ -292,7 +290,7 @@ func _render_callback(_effect_callback_type : int, render_data : RenderData):
 	# Attempt to find a light source if no light source was found earlier
 	if not light:
 		var tree := Engine.get_main_loop() as SceneTree
-		var root : Node = tree.edited_scene_root if Engine.is_editor_hint() else tree.current_scene
+		var root: Node = tree.edited_scene_root if Engine.is_editor_hint() else tree.current_scene
 		light = root.get_node_or_null('DirectionalLight3D')
 		if not light:
 			push_error("No light source detected please put a DirectionalLight3D into the scene thank you")
@@ -339,8 +337,8 @@ func _render_callback(_effect_callback_type : int, render_data : RenderData):
 	
 
 	# All of our settings are stored in a single uniform buffer, certainly not the best decision, but it's easy to work with
-	var buffer_bytes : PackedByteArray = PackedFloat32Array(buffer).to_byte_array()
-	var p_uniform_buffer : RID = rd.uniform_buffer_create(buffer_bytes.size(), buffer_bytes)
+	var buffer_bytes: PackedByteArray = PackedFloat32Array(buffer).to_byte_array()
+	var p_uniform_buffer: RID = rd.uniform_buffer_create(buffer_bytes.size(), buffer_bytes)
 	
 	var uniforms = []
 	var uniform := RDUniform.new()
@@ -361,7 +359,7 @@ func _render_callback(_effect_callback_type : int, render_data : RenderData):
 	rd.draw_command_begin_label("Terrain Mesh", Color(1.0, 1.0, 1.0, 1.0))
 
 	# The rest of this code is the creation of the draw call command list whether we are doing wireframe mode or not
-	var draw_list = rd.draw_list_begin(p_framebuffer, rd.DRAW_IGNORE_ALL, clear_colors, 1.0,  0,  Rect2(), 0)
+	var draw_list = rd.draw_list_begin(p_framebuffer, rd.DRAW_IGNORE_ALL, clear_colors, 1.0, 0, Rect2(), 0)
 
 	if wireframe:
 		rd.draw_list_bind_render_pipeline(draw_list, p_wire_render_pipeline)
@@ -400,7 +398,6 @@ func _notification(what):
 			rd.free_rid(p_wire_index_array)
 		if p_wire_index_buffer.is_valid():
 			rd.free_rid(p_wire_index_buffer)
-
 
 
 const source_vertex = "

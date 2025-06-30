@@ -1,7 +1,7 @@
 extends Camera3D
 
-var target_camera_state : CameraState;
-var interpolating_camera_state : CameraState;
+var target_camera_state: CameraState;
+var interpolating_camera_state: CameraState;
 
 var boost = -3.0;
 
@@ -32,13 +32,11 @@ func get_input_direction() -> Vector3:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	
-
 
 	var translation = get_input_direction();
 
