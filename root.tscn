@@ -38,9 +38,9 @@ frequency_variance = Vector2(-0.085, 0.115)
 height_scale = 90.9
 slope_damping = 0.155
 slope_threshold = Vector2(0.84, 0.98)
-low_slope_color = Color(0.366477, 0.373384, 0.0777902, 1)
+low_slope_color = Color(0.637843, 0.637843, 0.637843, 0.270588)
 high_slope_color = Color(0.1, 0.05835, 0.049, 1)
-ambient_light = Color(0.192, 0.2712, 0.3, 1)
+ambient_light = Color(0.485933, 0.618327, 0.667082, 1)
 metadata/_custom_type_script = "uid://7n58awc2ols0"
 
 [sub_resource type="Compositor" id="Compositor_1i1cu"]
